@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: testing
+  labels:
+    name: testing
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: testing
+  name: helloworld-java
+data:
+  HelloWorld.java: |
+    public class HelloWorld
+    {
+        /**
+        * Main entry point
+        * @param args  Not used
+        */
+        public static void main(String args[])
+        {
+            System.out.println("Hello World");
+        }
+    }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jdwp
+  namespace: testing
+  labels:
+    app: jdwp
+spec:
+  containers:
+  - name: jdwp
+    imagePullPolicy: Always
+    image: reg.kaut.io/jdwp:1
+    # command: ["/bin/bash", "-c"]
+    # args: ["javac /home/jboss/HelloWorld.java && java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0.0.0.0:11111"]
+    ports:
+      - name: registry11111
+        hostPort: 11111
+        containerPort: 11111
+        protocol: TCP
+    volumeMounts:
+      - name: helloworld-java
+        mountPath: /home/jboss/HelloWorld.java
+        subPath: HelloWorld.java
+        readOnly: true
+  volumes:
+    - name: helloworld-java
+      configMap:
+        name: helloworld-java
+        items:
+          - key: HelloWorld.java
+            path: HelloWorld.java
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jdwp-service
+  namespace: testing
+spec:
+  selector:
+    app: jdwp
+  ports:
+    - protocol: TCP
+      name: jdwp11111
+      port: 11111
+      targetPort: 11111

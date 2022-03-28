@@ -1,0 +1,10 @@
+{
+    "modified": "2022-03-28T19:30:49.106Z",
+    "owner": "admin",
+    "name": "Java Debug Wire Protocol",
+    "previousName": "",
+    "_id": 9007,
+    "title": "JDWP is found running and should be turned off in production",
+    "script": "#!/bin/bash\n\n_match=$(ps aux | grep \"[j]dwp=\" | wc -l)\n\nif [ \"${_match}\" == 1 ]; then\n  echo \"JDWP found within a Java process\"\n  exit 1\nfi\n",
+    "severity": "high"
+}
